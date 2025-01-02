@@ -23,10 +23,10 @@ public class ShoeCabinetController {
         return new ResponseEntity<>(shoeCabinets, HttpStatus.OK);
     }
 
-    @GetMapping("/find/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ShoeCabinet> getShoeCabinetById(@PathVariable("id") Long id) {
         final ShoeCabinet shoeCabinet = shoeCabinetService.findShoeCabinetById(id);
-        return new ResponseEntity<>(shoeCabinet, HttpStatus.OK);
+        return shoeCabinet != null ? new ResponseEntity<>(shoeCabinet, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/add")
@@ -35,15 +35,15 @@ public class ShoeCabinetController {
         return new ResponseEntity<>(persistentShoeCabinet, HttpStatus.CREATED);
     }
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     public ResponseEntity<ShoeCabinet> updateShoeCabinet(@RequestBody ShoeCabinet shoeCabinet) {
         final ShoeCabinet persistentShoeCabinet = shoeCabinetService.update(shoeCabinet);
         return new ResponseEntity<>(persistentShoeCabinet, HttpStatus.OK);
     }
 
-    @GetMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteShoeCabinetById(@PathVariable("id") Long id) {
         shoeCabinetService.delete(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
