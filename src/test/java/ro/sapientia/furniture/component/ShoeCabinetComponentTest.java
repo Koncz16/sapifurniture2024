@@ -43,7 +43,7 @@ public class ShoeCabinetComponentTest {
         shoeCabinetRepository.save(shoeCabinet);
 
         // Lekérdezzük a mentett ShoeCabinet-et a MockMvc segítségével
-        this.mockMvc.perform(get("/shoecabinet/all"))
+        this.mockMvc.perform(get("/shoe-cabinet/all"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].height", is(180.5)))

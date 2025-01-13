@@ -42,7 +42,7 @@ public class ShoeCabinetControllerTest {
         when(shoeCabinetService.findAllShoeCabinets()).thenReturn(List.of(shoeCabinet));
 
         // Meghívjuk a GET kérés tesztelését
-        this.mockMvc.perform(get("/shoecabinet/all"))
+        this.mockMvc.perform(get("/shoe-cabinet/all"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].height", is(180.5)))

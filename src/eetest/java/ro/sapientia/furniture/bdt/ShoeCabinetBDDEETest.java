@@ -6,8 +6,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        features = { "src/eetest/resources/ro/sapientia/furniture/bdt/ee" },
-        glue = {"ro.sapientia.furniture.bdt.ee.definition" },
+        features = { "src/eetest/resources/ro/sapientia/furniture/bdt/ee/shoeCabinet" },
+        glue = {"ro.sapientia.furniture.bdt.ee.definition.ShoeCabinet" },
         publish = false,
         dryRun = true
 )

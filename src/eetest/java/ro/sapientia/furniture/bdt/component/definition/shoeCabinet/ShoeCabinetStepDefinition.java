@@ -1,4 +1,4 @@
-package ro.sapientia.furniture.bdt.component.definition;
+package ro.sapientia.furniture.bdt.component.definition.shoeCabinet;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -29,7 +29,6 @@ import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import ro.sapientia.furniture.model.ShoeCabinet;
 
-@CucumberContextConfiguration
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -46,39 +45,42 @@ public class ShoeCabinetStepDefinition {
     @Autowired
     private TestEntityManager entityManager;
 
-    @Given("^that we have the following shoe cabinets$")
-    public void that_we_have_the_following_shoe_cabinets(final DataTable shoeCabinets) throws Throwable {
-        for (Map<String, String> shoeCabinet : shoeCabinets.asMaps(String.class, String.class)) {
+    @Given("that we have the following shoe cabinets:")
+    public void that_we_have_the_following_shoe_cabinets(io.cucumber.datatable.DataTable dataTable) {
+        for (Map<String, String> shoeCabinet : dataTable.asMaps(String.class, String.class)) {
             ShoeCabinet shoeCabinetEntity = new ShoeCabinet();
             shoeCabinetEntity.setMaterial(shoeCabinet.get("material"));
-            shoeCabinetEntity.setHeight(Integer.parseInt(shoeCabinet.get("height")));
-            shoeCabinetEntity.setWidth(Integer.parseInt(shoeCabinet.get("width")));
-            shoeCabinetEntity.setDepth(Integer.parseInt(shoeCabinet.get("depth")));
+            shoeCabinetEntity.setHeight(Double.parseDouble(shoeCabinet.get("height"))); // Módosított típus (double)
+            shoeCabinetEntity.setWidth(Double.parseDouble(shoeCabinet.get("width")));   // Módosított típus (double)
+            shoeCabinetEntity.setDepth(Double.parseDouble(shoeCabinet.get("depth")));   // Módosított típus (double)
+            shoeCabinetEntity.setShelvesCount(Integer.parseInt(shoeCabinet.get("shelvesCount"))); // Hozzáadott shelvesCount mező
             entityManager.persist(shoeCabinetEntity);
         }
         entityManager.flush();
     }
+    
 
     @When("^I invoke the shoe cabinet all endpoint$")
     public void I_invoke_the_shoe_cabinet_all_endpoint() throws Throwable {
-        mockMvc.perform(get("/shoecabinet/all")
+        mockMvc.perform(get("/shoe-cabinet/all")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
-    @Then("^I should get the material \"([^\"]*)\" for the position \"([^\"]*)\"$")
-    public void I_should_get_the_material_for_the_position(final String material, final String position) throws Throwable {
-        mockMvc.perform(get("/shoecabinet/all")
-                        .contentType(MediaType.APPLICATION_JSON))
+    @Then("I should get the shelvesCount {string} for the position {string}")
+    public void i_should_get_the_shelves_count_for_the_position(String shelvesCount, String position) throws Exception {
+        mockMvc.perform(get("/shoe-cabinet/all")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[" + position + "].material", is(material)));
+                .andExpect(jsonPath("$[" + position + "].shelvesCount", is(Integer.parseInt(shelvesCount))));
     }
+    
 
     @Then("^I should get the dimensions (\\d+)x(\\d+)x(\\d+) for the position \"([^\"]*)\"$")
     public void I_should_get_the_dimensions_for_the_position(final int height, final int width, final int depth, final String position) throws Throwable {
-        mockMvc.perform(get("/shoecabinet/all")
+        mockMvc.perform(get("/shoe-cabinet/all")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
