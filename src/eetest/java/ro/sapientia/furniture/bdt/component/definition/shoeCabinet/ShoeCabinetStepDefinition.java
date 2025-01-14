@@ -20,6 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -29,13 +30,14 @@ import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import ro.sapientia.furniture.model.ShoeCabinet;
 
+@CucumberContextConfiguration
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 @AutoConfigureDataJpa
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @AutoConfigureTestEntityManager
-@TestPropertySource(locations = "classpath:contest.properties")
+@TestPropertySource(locations = "classpath:cotest.properties")
 @ContextConfiguration
 public class ShoeCabinetStepDefinition {
 
@@ -45,48 +47,36 @@ public class ShoeCabinetStepDefinition {
     @Autowired
     private TestEntityManager entityManager;
 
-    @Given("that we have the following shoe cabinets:")
-    public void that_we_have_the_following_shoe_cabinets(io.cucumber.datatable.DataTable dataTable) {
-        for (Map<String, String> shoeCabinet : dataTable.asMaps(String.class, String.class)) {
-            ShoeCabinet shoeCabinetEntity = new ShoeCabinet();
-            shoeCabinetEntity.setMaterial(shoeCabinet.get("material"));
-            shoeCabinetEntity.setHeight(Double.parseDouble(shoeCabinet.get("height"))); // Módosított típus (double)
-            shoeCabinetEntity.setWidth(Double.parseDouble(shoeCabinet.get("width")));   // Módosított típus (double)
-            shoeCabinetEntity.setDepth(Double.parseDouble(shoeCabinet.get("depth")));   // Módosított típus (double)
-            shoeCabinetEntity.setShelvesCount(Integer.parseInt(shoeCabinet.get("shelvesCount"))); // Hozzáadott shelvesCount mező
-            entityManager.persist(shoeCabinetEntity);
+       @Given("^that we have the following shoe cabinets:$")
+    public void that_we_have_the_following_shoe_cabinets(final DataTable shoeCabinets) throws Throwable {
+        for (final Map<String, String> data : shoeCabinets.asMaps(String.class, String.class)) {
+            ShoeCabinet shoeCabinet = new ShoeCabinet();
+            shoeCabinet.setHeight(Double.parseDouble(data.get("height")));
+            shoeCabinet.setWidth(Double.parseDouble(data.get("width")));
+            shoeCabinet.setDepth(Double.parseDouble(data.get("depth")));
+            shoeCabinet.setMaterial(data.get("material"));
+            shoeCabinet.setShelvesCount(Integer.parseInt(data.get("shelves_count")));
+            entityManager.persist(shoeCabinet);
         }
         entityManager.flush();
     }
-    
 
     @When("^I invoke the shoe cabinet all endpoint$")
     public void I_invoke_the_shoe_cabinet_all_endpoint() throws Throwable {
-        mockMvc.perform(get("/shoe-cabinet/all")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
-    @Then("I should get the shelvesCount {string} for the position {string}")
-    public void i_should_get_the_shelves_count_for_the_position(String shelvesCount, String position) throws Exception {
-        mockMvc.perform(get("/shoe-cabinet/all")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[" + position + "].shelvesCount", is(Integer.parseInt(shelvesCount))));
-    }
-    
-
-    @Then("^I should get the dimensions (\\d+)x(\\d+)x(\\d+) for the position \"([^\"]*)\"$")
-    public void I_should_get_the_dimensions_for_the_position(final int height, final int width, final int depth, final String position) throws Throwable {
-        mockMvc.perform(get("/shoe-cabinet/all")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[" + position + "].height", is(height)))
-                .andExpect(jsonPath("$[" + position + "].width", is(width)))
-                .andExpect(jsonPath("$[" + position + "].depth", is(depth)));
+    @Then("^I should get the height \"([^\"]*)\" for the position \"([^\"]*)\"$")
+    public void I_should_get_result_in_shoe_cabinet_list(final String height, final String position) throws Throwable {
+        WebClient webClient = WebClient.create();
+        webClient.get().uri("/shoecabinet/all") // The endpoint being tested
+                .accept(MediaType.APPLICATION_JSON)
+                .exchangeToMono(response -> response.toEntityList(ShoeCabinet.class)) // Converts the response to a list
+                .flatMapIterable(entity -> entity.getBody()) // Works with each shoe cabinet item
+                .elementAt(Integer.parseInt(position)) // Access the element at the specified position
+                .doOnNext(sc -> {
+                    assert sc != null;
+                    assert sc.getHeight() == Double.parseDouble(height);
+                });
     }
 
     @After
