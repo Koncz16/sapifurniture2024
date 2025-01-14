@@ -46,38 +46,38 @@ public class ShoeCabinetStepDefinition {
     @Autowired
     private TestEntityManager entityManager;
 
-    @Given("^that we have the following shoe cabinets$")
+    @Given("^that we have the following shoe cabinets:$")
     public void that_we_have_the_following_shoe_cabinets(final DataTable shoeCabinets) throws Throwable {
         for (final Map<String, String> data : shoeCabinets.asMaps(String.class, String.class)) {
-            ShoeCabinet shoeCabinet = new ShoeCabinet(); // Modell név módosítva
-            shoeCabinet.setHeight(Integer.parseInt(data.get("height")));
-            shoeCabinet.setWidth(Integer.parseInt(data.get("width")));
+            ShoeCabinet shoeCabinet = new ShoeCabinet();
+            shoeCabinet.setHeight(Double.parseDouble(data.get("height")));
+            shoeCabinet.setWidth(Double.parseDouble(data.get("width")));
+            shoeCabinet.setDepth(Double.parseDouble(data.get("depth")));
             shoeCabinet.setMaterial(data.get("material"));
-            shoeCabinet.setShelvesCount(Integer.parseInt(data.get("capacity")));
-            entityManager.persist(shoeCabinet); // Persistálás ShoeCabinet objektum
+            shoeCabinet.setShelvesCount(Integer.parseInt(data.get("shelves_count")));
+            entityManager.persist(shoeCabinet);
         }
         entityManager.flush();
     }
 
     @When("^I invoke the shoe cabinet all endpoint$")
     public void I_invoke_the_shoe_cabinet_all_endpoint() throws Throwable {
-        // A mock MVC perform code vagy WebClient kérés itt jöhetne.
-        // Mivel most nem használjuk, üresen hagyjuk.
     }
 
-    @Then("^I should get the height \"([^\"]*)\" for the position \\\"([^\\\"]*)\\\"$")
-    public void I_should_get_the_height_for_the_position(final String height, final String position) throws Throwable {
+    @Then("^I should get the height \"([^\"]*)\" for the position \"([^\"]*)\"$")
+    public void I_should_get_result_in_shoe_cabinet_list(final String height, final String position) throws Throwable {
         WebClient webClient = WebClient.create();
-        webClient.get().uri("/shoecabinet/all") // Az endpoint, amit tesztelünk
+        webClient.get().uri("/shoecabinet/all") // The endpoint being tested
                 .accept(MediaType.APPLICATION_JSON)
-                .exchangeToMono(response -> response.toEntityList(ShoeCabinet.class)) // A választ listává konvertáljuk
-                .flatMapIterable(HttpEntity::getBody) // Munkálkodunk minden egyes elem testén
-                .elementAt(0) // Az első elem elérése
+                .exchangeToMono(response -> response.toEntityList(ShoeCabinet.class)) // Converts the response to a list
+                .flatMapIterable(entity -> entity.getBody()) // Works with each shoe cabinet item
+                .elementAt(Integer.parseInt(position)) // Access the element at the specified position
                 .doOnNext(sc -> {
                     assert sc != null;
-                    assert sc.getHeight() == Integer.parseInt(height); // Ellenőrizzük a magasságot
+                    assert sc.getHeight() == Double.parseDouble(height);
                 });
     }
+
 
     @After
     public void cleanup() {

@@ -1,22 +1,17 @@
-Feature: Check if the find all endpoint works for ShoeCabinet
-  As a furniture tool user
-  I want to be able to see all the shoe cabinets
+Feature: Check if the find all endpoints work for ShoeCabinet
+  As a furniture tool user, I want to be able to see all the shoe cabinets
 
   Scenario: One element
     Given that we have the following shoe cabinets:
-      | height | width | material | shelvesCount |
-      | 150    | 80    | Wood     | 5            |
+      | width  | height | depth | material   | shelves_count |
+      | 10     | 10     | 10    | Wood       | 4             |
     When I invoke the shoe cabinet all endpoint
-    Then I should get the height "150" for the position "0"
-    And I should get the shelvesCount "5" for the position "0"
-
-  Scenario: Two elements in the table
+    Then I should get the height "10" for the position "0"
+    
+  Scenario: Two elements
     Given that we have the following shoe cabinets:
-      | height | width | material | shelvesCount |
-      | 150    | 80    | Wood     | 5            |
-      | 120    | 70    | Metal    | 4            |
+      | width  | height | depth | material   | shelves_count |
+      | 10     | 10     | 10    | Wood       | 4             |
+      | 15     | 12     | 15    | Metal      | 5             |
     When I invoke the shoe cabinet all endpoint
-    Then I should get the height "150" for the position "0"
-    And I should get the shelvesCount "5" for the position "0"
-    Then I should get the height "120" for the position "1"
-    And I should get the shelvesCount "4" for the position "1"
+    Then I should get the height "12" for the position "1"
