@@ -31,7 +31,6 @@ public class ShoeCabinetComponentTest {
 
     @Test
     public void testFindAllShoeCabinets() throws Exception {
-        // Létrehozunk egy új ShoeCabinet objektumot és mentjük el
         ShoeCabinet shoeCabinet = new ShoeCabinet();
         shoeCabinet.setHeight(180.5);
         shoeCabinet.setWidth(90.0);
@@ -39,10 +38,8 @@ public class ShoeCabinetComponentTest {
         shoeCabinet.setMaterial("Wood");
         shoeCabinet.setShelvesCount(5);
 
-        // Mentjük el az objektumot
         shoeCabinetRepository.save(shoeCabinet);
 
-        // Lekérdezzük a mentett ShoeCabinet-et a MockMvc segítségével
         this.mockMvc.perform(get("/shoe-cabinet/all"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
